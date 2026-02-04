@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>JSON Key Response</title>
+</head>
+<body>
+
+<pre id="jsonOutput"></pre>
+
+<script>
+  // Load Active Key
+  let activeKey = localStorage.getItem("activeKey");
+
+  // Load All Keys List
+  let keysList = JSON.parse(localStorage.getItem("keysList")) || [];
+
+  // JSON Response Data
+  const data = {
+    status: "success",
+    message: "All Keys Loaded Successfully",
+
+    activeKey: activeKey ? activeKey : "No Active Key",
+
+    totalKeys: keysList.length,
+
+    allKeys: keysList.map((item, index) => ({
+      id: index + 1,
+      key: item.key,
+      created: item.created
+    }))
+  };
+
+  // Show JSON Output
+  document.getElementById("jsonOutput").textContent =
+    JSON.stringify(data, null, 4);
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel Pro</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      padding: 30px;
+    }
+
+    h1 {
+      color: #38bdf8;
+      margin-bottom: 10px;
+    }
+
+    input {
+      padding: 12px;
+      width: 250px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin: 6px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .addBtn {
+      background: #38bdf8;
+    }
+
+    .addBtn:hover {
+      background: #0ea5e9;
+    }
+
+    .clearBtn {
+      background: orange;
+      color: black;
+    }
+
+    .clearBtn:hover {
+      background: darkorange;
+    }
+
+    .delBtn {
+      background: red;
+      color: white;
+    }
+
+    .delBtn:hover {
+      background: darkred;
+    }
+
+    .activeBtn {
+      background: green;
+      color: white;
+    }
+
+    .activeBtn:hover {
+      background: darkgreen;
+    }
+
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 95%;
+      max-width: 750px;
+      border-radius: 15px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #334155;
+    }
+
+    th {
+      background: #1e293b;
+      color: #38bdf8;
+    }
+
+    td {
+      background: #111827;
+    }
+
+    .topBar {
+      margin: 20px auto;
+      padding: 15px;
+      background: #1e293b;
+      border-radius: 15px;
+      max-width: 600px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🔑 Admin Key Panel Pro</h1>
+  <p>Manage Keys + JSON Data Easily</p>
+
+  <div class="topBar">
+    <input type="text" id="keyInput" placeholder="Enter New Key">
+    <br>
+
+    <button class="addBtn" onclick="addKey()">➕ Add Key</button>
+
+    <button class="clearBtn" onclick="clearAllKeys()">
+      🗑 Clear All JSON
+    </button>
+  </div>
+
+  <h2>📌 Saved Keys List</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Key</th>
+        <th>Created Time</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="keyTable"></tbody>
+  </table>
+
+  <script>
+    let keys = JSON.parse(localStorage.getItem("keysList")) || [];
+
+    function saveKeys() {
+      localStorage.setItem("keysList", JSON.stringify(keys));
+    }
+
+    function renderKeys() {
+      let table = document.getElementById("keyTable");
+      table.innerHTML = "";
+
+      if (keys.length === 0) {
+        table.innerHTML = `
+          <tr>
+            <td colspan="4">❌ No Keys Found</td>
+          </tr>
+        `;
+        return;
+      }
+
+      keys.forEach((item, index) => {
+        table.innerHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${item.key}</td>
+            <td>${item.created}</td>
+            <td>
+              <button class="activeBtn" onclick="activateKey(${index})">
+                Activate
+              </button>
+
+              <button class="delBtn" onclick="deleteKey(${index})">
+                Delete
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function addKey() {
+      let keyValue = document.getElementById("keyInput").value.trim();
+
+      if (keyValue === "") {
+        alert("⚠ Please enter a valid key!");
+        return;
+      }
+
+      let newKey = {
+        key: keyValue,
+        created: new Date().toLocaleString()
+      };
+
+      keys.push(newKey);
+      saveKeys();
+      renderKeys();
+
+      document.getElementById("keyInput").value = "";
+    }
+
+    function deleteKey(index) {
+      if (confirm("❌ Are you sure you want to delete this key?")) {
+        keys.splice(index, 1);
+        saveKeys();
+        renderKeys();
+      }
+    }
+
+    function activateKey(index) {
+      localStorage.setItem("activeKey", keys[index].key);
+      alert("✅ Activated Key: " + keys[index].key);
+    }
+
+    // ✅ Clear All JSON Data
+    function clearAllKeys() {
+      if (confirm("⚠ Delete ALL keys and JSON data?")) {
+        keys = [];
+        localStorage.removeItem("keysList");
+        localStorage.removeItem("activeKey");
+
+        alert("🗑 All JSON Data Deleted Successfully!");
+        renderKeys();
+      }
+    }
+
+    renderKeys();
+  </script>
+
+</body>
+</html>
