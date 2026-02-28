@@ -1,39 +1,149 @@
 <!DOCTYPE html>
-<html>
+<html lang="gu">
 <head>
-  <meta charset="UTF-8">
-  <title>JSON Key Response</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Number Tracker | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+    </style>
 </head>
-<body>
+<body class="bg-slate-50 min-h-screen">
 
-<pre id="jsonOutput"></pre>
+    <nav class="bg-indigo-700 text-white p-6 shadow-lg">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold italic tracking-wider"><i class="fas fa-shield-halved mr-2"></i>Number X</h1>
+            <span class="text-sm bg-indigo-800 px-3 py-1 rounded-full border border-indigo-400">Live API Portal</span>
+        </div>
+    </nav>
 
-<script>
-  // Load Active Key
-  let activeKey = localStorage.getItem("activeKey");
+    <main class="max-w-4xl mx-auto px-4 mt-10">
+        <div class="glass p-8 rounded-3xl shadow-2xl border border-gray-200">
+            <h2 class="text-gray-800 text-xl font-semibold mb-4 text-center">Mobile Intelligence Database</h2>
+            <div class="flex flex-col md:flex-row gap-3">
+                <div class="relative flex-grow">
+                    <i class="fas fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="mobileInput" placeholder="Enter Mobile Number (e.g. 7811017126)" 
+                           class="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 focus:ring-4 focus:ring-indigo-200 outline-none transition-all text-lg shadow-sm">
+                </div>
+                <button onclick="searchNumber()" id="searchBtn" 
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-10 rounded-2xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fas fa-magnifying-glass"></i> Search
+                </button>
+            </div>
+        </div>
 
-  // Load All Keys List
-  let keysList = JSON.parse(localStorage.getItem("keysList")) || [];
+        <div id="loader" class="hidden text-center my-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent"></div>
+            <p class="mt-4 text-indigo-600 font-medium italic">Fetching secure data...</p>
+        </div>
 
-  // JSON Response Data
-  const data = {
-    status: "success",
-    message: "All Keys Loaded Successfully",
+        <div id="error" class="hidden mt-8 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg shadow-sm">
+            <i class="fas fa-circle-exclamation mr-2"></i> <span id="errorText">Error message here</span>
+        </div>
 
-    activeKey: activeKey ? activeKey : "No Active Key",
+        <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 my-12">
+            </div>
+    </main>
 
-    totalKeys: keysList.length,
+    <footer class="text-center py-10 text-gray-400 text-sm">
+        <p>© 2026 SHAHID Security Intelligence | Data is fetched via encrypted API</p>
+    </footer>
 
-    allKeys: keysList.map((item, index) => ({
-      id: index + 1,
-      key: item.key,
-      created: item.created
-    }))
-  };
+    <script>
+        async function searchNumber() {
+            const num = document.getElementById('mobileInput').value;
+            const btn = document.getElementById('searchBtn');
+            const grid = document.getElementById('resultsGrid');
+            const loader = document.getElementById('loader');
+            const errorDiv = document.getElementById('error');
+            const errorText = document.getElementById('errorText');
 
-  // Show JSON Output
-  document.getElementById("jsonOutput").textContent =
-    JSON.stringify(data, null, 4);
+            if (num.length < 10) {
+                alert("Please enter a valid 10-digit number.");
+                return;
+            }
+
+            // UI State Reset
+            grid.innerHTML = "";
+            errorDiv.classList.add('hidden');
+            loader.classList.remove('hidden');
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            // Using AllOrigins Proxy to bypass CORS error
+            const targetUrl = `https://num-free-rootx-jai-shree-ram-14-day.vercel.app/?key=lundkinger&number=${num}`;
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+
+            try {
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error("Server response failed.");
+                
+                const wrapper = await response.json();
+                const data = JSON.parse(wrapper.contents);
+
+                if (data.status === "success" && data.results && data.results.length > 0) {
+                    data.results.forEach(user => {
+                        const card = `
+                            <div class="bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-2xl transition-shadow group">
+                                <div class="bg-gradient-to-r from-indigo-600 to-blue-500 p-4 flex justify-between items-center">
+                                    <h3 class="text-white font-bold tracking-wide uppercase"><i class="fas fa-user-circle mr-2"></i> ${user.name}</h3>
+                                    <span class="text-[10px] bg-white/20 text-white px-2 py-1 rounded-md font-bold uppercase">${user.circle}</span>
+                                </div>
+                                <div class="p-6 space-y-4">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500"><i class="fas fa-id-card"></i></div>
+                                        <div>
+                                            <p class="text-[10px] text-gray-400 font-bold uppercase">Father's Name</p>
+                                            <p class="text-gray-800 font-semibold">${user.fname || 'N/A'}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-500"><i class="fas fa-location-dot"></i></div>
+                                        <div>
+                                            <p class="text-[10px] text-gray-400 font-bold uppercase">Full Address</p>
+                                            <p class="text-gray-700 text-xs leading-relaxed font-medium">${user.address}</p>
+                                        </div>
+                                    </div>
+                                    <div class="pt-4 border-t flex justify-between items-center">
+                                        <div>
+                                            <p class="text-[10px] text-gray-400 font-bold uppercase">Mobile No.</p>
+                                            <p class="text-indigo-600 font-bold">${user.mobile}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] text-gray-400 font-bold uppercase text-right">Alt No.</p>
+                                            <p class="text-gray-600 font-medium text-sm text-right">${user.alt || 'None'}</p>
+                                        </div>
+                                    </div>
+                                    ${user.email ? `
+                                    <div class="bg-gray-50 p-2 rounded-xl flex items-center gap-2">
+                                        <i class="fas fa-envelope text-blue-400 text-xs"></i>
+                                        <p class="text-xs text-gray-500 truncate">${user.email}</p>
+                                    </div>` : ''}
+                                </div>
+                            </div>
+                        `;
+                        grid.innerHTML += card;
+                    });
+                } else {
+                    throw new Error("No records found for this mobile number.");
+                }
+            } catch (err) {
+                errorDiv.classList.remove('hidden');
+                errorText.innerText = err.message;
+            } finally {
+                loader.classList.add('hidden');
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }
+        }
+    </script>
+</body>
+</html>
 
 </script>
 
